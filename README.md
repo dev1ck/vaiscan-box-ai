@@ -1,1 +1,1 @@
-# vAIscan_Box-S.AI
+# vaiscan-box-static-ai
