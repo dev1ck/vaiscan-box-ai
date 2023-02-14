@@ -4,11 +4,11 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from sklearn.svm import SVC
+from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_val_score, cross_validate
-from sklearn.ensemble import BaggingClassifier
-from sklearn.externals import joblib
+import joblib
 import warnings
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -59,32 +59,42 @@ class Classifiers():
             print("test num %d real y : %d"%(i, self.y_test.iloc[i]))
             print("test num %d pred y : %d"%(i, y_pred[i]))
             print("")
-        joblib.dump(model, './dnn_m.joblib')
+        
+        model.save('/home/jodaegeun/vaiscan-box-static-ai/models/saved_models/dnn_model.h5', overwrite=True, save_format="h5")
 
 
     def do_SVC(self):
+        print("svc in")
+        nfolds=10
+        svm_parameters = [{'kernel' : ['rbf'],'C':[0.1,1,10, 100, 1000], 'gamma':[1, 0.1, 0.01, 0.001, 0.0001]}]
+
+        #사이킷런에서 제공하는 GridSearchCV를 사용해 최적의 파라미터를 구함
+        clf = GridSearchCV(SVC(verbose=True), svm_parameters, cv=nfolds, scoring='accuracy') # estimator, param_grid, cross-validation
+        print("end gridsearchcv")
+        clf.fit(self.x_train, self.y_train.values.ravel())
+        print(clf.best_params_) #최고 점수를 낸 파라미터 출력
+        #model=SVC(C=10,gamma=1e-06, kernel='rbf',verbose=True)
+#         model = SVC(C=10, cache_size=200, class_weight=None, coef0=0.0,
+#   decision_function_shape='ovr', degree=3, gamma=5, kernel='rbf',
+#   max_iter=-1, probability=True, random_state=None, shrinking=True,
+#   tol=0.001, verbose=True) 
         
-        clf=SVC()
-        n_estimators = 10
-        n_jobs = 2
-        model = BaggingClassifier(base_estimator=clf,n_estimators=10,max_samples=1.0,n_jobs=None)
-        
-        model.fit(self.x_train, self.y_train)
-        y_pred = model.predict(self.x_test)
-        #y_pred = y_pred.flatten() # 차원 펴주기
-        #y_pred = np.where(y_pred > 0.5, 1 , 0) #0.5보다크면 1, 작으면 0
-        ## 성능 평가
-        #print("dd: ",model.oob_score_) ## Out-of-bag 성능 평가 점수
-        #print('정확도 : ', model.score(self.x_test,self.y_test)) ## 테스트 성능 평가 점수(Accuracy)
-        print("\n SVC Models :")
-        print("accuracy_score : ",accuracy_score(self.y_test, y_pred))
-        for i in range(10):
-            print("test num %d real y : %d"%(i, self.y_test.iloc[i]))
-            print("test num %d pred y : %d"%(i, y_pred[i]))
-            print("")
+#         model.fit(self.x_train, self.y_train)
+#         y_pred = model.predict(self.x_test)
+#         # y_pred = y_pred.flatten() # 차원 펴주기
+#         # y_pred = np.where(y_pred > 0.5, 1 , 0) #0.5보다크면 1, 작으면 0
+#         # 성능 평가
+#         #print("dd: ",model.oob_score_) ## Out-of-bag 성능 평가 점수
+#         #print('정확도 : ', model.score(self.x_test,self.y_test)) ## 테스트 성능 평가 점수(Accuracy)
+#         print("\n SVC Models :")
+#         print("accuracy_score : ",accuracy_score(self.y_test, y_pred))
+#         for i in range(10):
+#             print("test num %d real y : %d"%(i, self.y_test.iloc[i]))
+#             print("test num %d pred y : %d"%(i, y_pred[i]))
+#             print("")
             
     def do_all(self):
-        #self.do_DNN()
+        self.do_DNN()
         #self.do_SVC()
     
 
