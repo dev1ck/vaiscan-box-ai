@@ -8,8 +8,8 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_val_score, cross_validate
-import joblib
 import warnings
+np.set_printoptions(suppress=True)
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 warnings.simplefilter(action='ignore', category=FutureWarning)
 #tf.enable_eager_execution()
@@ -27,40 +27,49 @@ class Classifiers():
 
         model = tf.keras.models.Sequential()    
         model.add(tf.keras.layers.Input(shape=(168,))) # Input tensor
-        model.add(tf.keras.layers.Dense(units=128, activation='sigmoid')) # hidden layer 1
+        model.add(tf.keras.layers.Dense(units=256, activation='sigmoid')) # hidden layer 1
+        model.add(tf.keras.layers.Dropout(0.5))
         model.add(tf.keras.layers.Dense(units=1024, activation='relu')) #hidden layer 2
         model.add(tf.keras.layers.Dropout(0.5))
         model.add(tf.keras.layers.Dense(units=1024, activation='relu')) #hidden layer 3
         model.add(tf.keras.layers.Dropout(0.5))
+        model.add(tf.keras.layers.Dense(units=256, activation='relu')) #hidden layer 4
+        model.add(tf.keras.layers.Dropout(0.5))
         model.add(tf.keras.layers.Dense(units=128, activation='relu')) #hidden layer 4
+        model.add(tf.keras.layers.Dropout(0.5))
         model.add(tf.keras.layers.Dense(units=1, activation='sigmoid')) #output layer 
 
-        adam = tf.keras.optimizers.Adam(learning_rate=0.0001)
+        adam = tf.keras.optimizers.Adam(learning_rate=0.001)
         model.compile(optimizer=adam,
             loss='binary_crossentropy',
             metrics=['accuracy'])
         
-        train_dataset=dataset.shuffle(len(self.x_train)).batch(128)
+        #print(model.summary())
+        
+        train_dataset=dataset.shuffle(len(self.x_train)).batch(64)
 
-        model.fit(train_dataset,epochs=20)
+        model.fit(train_dataset,epochs=13)
 
         test_loss, test_accuracy = model.evaluate(self.x_test,self.y_test)
         print('\n\nTest Loss {}, Test Accuracy {}'.format(test_loss, test_accuracy))
 
         print("\n\n predict!!!\n")
-        y_pred=model.predict(self.x_test)
+        test=self.x_test.values.tolist()
+        print("test:",test[0])
+        y_pred=model.predict(test)
         y_pred = y_pred.flatten() # 차원 펴주기
         
-        y_pred = np.where(y_pred > 0.5, 1 , 0) #0.5보다크면 1, 작으면 0
+        y_pred = np.where(y_pred > 0.4, 1 , 0) #0.5보다크면 1, 작으면 0
         
         print("\n DNN Models :")
         print("accuracy_score : ",accuracy_score(self.y_test, y_pred))
-        for i in range(10):
+        j=0
+        for i in range(50):
             print("test num %d real y : %d"%(i, self.y_test.iloc[i]))
-            print("test num %d pred y : %d"%(i, y_pred[i]))
+            print("test num %d pred y : %f"%(i, y_pred[i]))
             print("")
         
-        model.save('/home/jodaegeun/vaiscan-box-static-ai/models/saved_models/dnn_model.h5', overwrite=True, save_format="h5")
+        model.save('/home/jodaegeun/vaiscan-box-static-ai/models/saved_models/rlast_model.h5', overwrite=True, save_format="h5")
 
 
     def do_SVC(self):
@@ -100,9 +109,10 @@ class Classifiers():
 
 # PE 특징 데이터 로드
 pe_nor = pd.read_csv('./normal_pe.csv')
-pe_mal = pd.read_csv('./malware_pe.csv')
+#pe_mal = pd.read_csv('./malware_pe.csv')
+pe_mal = pd.read_csv('./tmpmalware.csv')
 pe_all = pd.concat([pe_nor, pe_mal])  # 10004 x 72 -> 각종 데이터 지우고 68
-ngram = pd.read_csv('./ngram.csv')   # 10004 x 103 -> 각종 데이터 지우고 100   
+ngram = pd.read_csv('./tmpngram.csv')   # 10004 x 103 -> 각종 데이터 지우고 100   
 #print("pe_all : ",pe_all.shape)
 #print("ngram : ",ngram.shape)
 
@@ -110,7 +120,7 @@ ngram = pd.read_csv('./ngram.csv')   # 10004 x 103 -> 각종 데이터 지우고
 pe_all=pe_all.sort_values(by=['SHA256'])
 ngram=ngram.sort_values(by=['SHA256'])
 
-pe_all = pe_all.drop(['filename', 'SHA256', 'packer_type', 'class'], 1) # 파일이름, SHA256, packer_type 열 제거
+pe_all = pe_all.drop(['filename', 'SHA256', 'packer_type','class'], 1) # 파일이름, SHA256, packer_type 열 제거
 ngram = ngram.drop(['filename', 'SHA256'], 1) # 파일이름, SHA256, packer_type 열 제거
 
 # 인덱스 초기화
@@ -118,14 +128,15 @@ pe_all = pe_all.reset_index(drop=True)
 ngram = ngram.reset_index(drop=True)
 
 # pe_all 과 ngram 을 열기준 병합 -> 10004 X 169
-X_tmp=pd.concat([pe_all, ngram], axis=1)
-print("all : ",X_tmp.shape)
+X=pd.concat([pe_all, ngram], axis=1)
+#X_tmp=pe_all
+print("all : ",X.shape)
 # class( 결과값 ) 을 따로 분리
-Y_tmp=X_tmp.pop('class')
+Y=X.pop('class')
 
-# 혹시 영향을 미칠지 모를 속성이름 제거
-Y = Y_tmp[1:]
-X = X_tmp[1:]
+# # 혹시 영향을 미칠지 모를 속성이름 제거
+# Y = Y_tmp[1:]
+# X = X_tmp[1:]
 
 models=Classifiers(X,Y)
 
