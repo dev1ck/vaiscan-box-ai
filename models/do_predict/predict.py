@@ -531,7 +531,7 @@ class do_predict():
             data = np.asarray(data).reshape((1, -1)) # 자료형 변환 
             self.dbprogress(3)
             
-            model = tf.keras.models.load_model('/home/jodaegeun/vaiscan-box-static-ai/models/saved_models/last_model.h5')
+            model = tf.keras.models.load_model('../saved_models/last_model.h5')
             self.dbprogress(3)
             
             print("data : \n",data)

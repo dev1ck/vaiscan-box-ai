@@ -73,7 +73,7 @@ class Node():
 # 웹 소켓 클라이언트가 접속이 되면 호출된다.
 async def accept(websocket):
   # 데이터 정보에 관한 클래스 할당
-  path="/home/jodaegeun/vaiscan-box-static-ai/received_files/"
+  path="../received_files/"
   node = Node(path)
   do_predict = predict.do_predict(path)
   num=0
@@ -139,6 +139,6 @@ async def accept(websocket):
         # 종료!
         break
 
-start_server = websockets.serve(accept, "172.20.10.13", 8282,  max_size=104857600)
+start_server = websockets.serve(accept, "172.20.10.5", 8282,  max_size=104857600)
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
