@@ -89,18 +89,6 @@ class do_predict():
     def dbprogress(self,increase):
         self.num+=increase
         self.db.setprogress(self.hash,self.num)
-
-    
-    # async def p_prograss(self):
-    #     tmp=0
-    #     while 1:
-    #         await asyncio.sleep(5)
-    #         if self.prograss_n <= 91:
-    #             #if tmp!=self.prograss_n:
-    #             print("prograss : %d %%"%(self.prograss_n))
-    #             #    tmp=self.prograss_n
-    #         else:
-    #             break
     
     def file_creation_year(self,seconds):
         tmp = 1970 + ((int(seconds) / 86400) / 365)
@@ -321,7 +309,7 @@ class do_predict():
             ProductVersionMS = pe.VS_FIXEDFILEINFO.ProductVersionMS
         except Exception as e:
             result=["error"]
-        #print(("{} while opening {}".format(e,filepath)
+
         else:
         #shifting byte
             FileVersion = (FileVersionMS >> 16, FileVersionMS & 0xFFFF, FileVersionLS >> 16, FileVersionLS & 0xFFFF)
@@ -401,13 +389,12 @@ class do_predict():
     def get_ngram_count(self, headers, grams):
 
         patterns = list()
-        #print("headers : ",headers)
         self.dbprogress(3)
         for pat in headers:
             try:
                 
                 patterns.append(grams[pat])
-                #print("patterns :",patterns)
+
             except:
                 patterns.append(0)
 
@@ -427,7 +414,6 @@ class do_predict():
             size = section.Misc_VirtualSize
             
             if ep > addr and ep < (addr+size):
-                #print((section.Name)
                 ep = addr
                 end = size
         self.dbprogress(3)
@@ -442,7 +428,6 @@ class do_predict():
 
         md = Cs(CS_ARCH_X86, CS_MODE_32)
         md.detail = False
-        #md.skipdata = True
         self.dbprogress(3)
         
         for insn in md.disasm(data, 0x401000):
@@ -475,12 +460,6 @@ class do_predict():
 
     def extract_all(self):
         
-        #normal=pd.read_csv("../normal_pe.csv")
-        #asyncio.create_task(self.p_prograss())
-        #tmp=asyncio.create_task(self.extract_pe())
-        #result=await asyncio.gather(tmp)
-        #data,magic=result[0]
-        
         data=self.extract_pe()
         print(len(data))
         print(data)
@@ -491,24 +470,7 @@ class do_predict():
             return 0
         self.dbprogress(3)
         
-        # tmp=["file","hash"]
-        # tmp+=data
-        # tmp+="0"
-        # print(tmp)
-        # f = open('../normal_pe.csv','a', newline='')
-        # wr = csv.writer(f)
-        # wr.writerow(tmp)
-        
-        # f.close()
-        #tmp=asyncio.create_task(self.extract_ngram())
-        #ngram= await tmp
         ngram=self.extract_ngram()
-        # ntmp=["file","hash"]
-        # ntmp+=ngram
-        # ntmp+="0"
-        # f = open('../ngram.csv','a', newline='')
-        # wr = csv.writer(f)
-        # wr.writerow(ntmp)
         print(len(ngram))
         print(data[63])
         del data[63]
@@ -516,12 +478,11 @@ class do_predict():
         # extend() 는 리스트 자체를 변환시킴. 반환은 none이 됨. 주의!
         data.extend(ngram)
         self.dbprogress(3)
-        #print("hello",data)
+
         return data
     
     def predict_file(self):
         
-        #data = asyncio.run(ft.extract_all())
         data=self.extract_all()
         
         if data!=0:

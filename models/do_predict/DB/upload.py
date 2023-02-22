@@ -5,7 +5,6 @@ class vaiscanDB():
         self.client= MongoClient("mongodb://13.125.230.113:27017")
         self.db = self.client['vaiscan']
         self.col = self.db['results']
-        #self.hash=hash
     
     def selectall(self):
         
@@ -17,7 +16,6 @@ class vaiscanDB():
     
     def set(self,filename,filesize,hash,type):
         where={"hash":hash}
-        # "type" : type,
         newvalue={"$set":{"file_name":filename,"size":filesize,"type" : type}}
         try:
             self.col.update_one(where,newvalue)
@@ -29,7 +27,6 @@ class vaiscanDB():
     
     def settype(self,hash,type):
         where={"hash":hash}
-        # "type" : type,
         newvalue={"$set":{"type" : type}}
         try:
             self.col.update_one(where,newvalue)
@@ -41,7 +38,6 @@ class vaiscanDB():
         
     def setrisk(self,hash,risk):
         where={"hash":hash}
-        # "type" : type,
         newvalue={"$set":{"risk" : risk}}
         try:
             self.col.update_one(where,newvalue)
@@ -55,7 +51,6 @@ class vaiscanDB():
     def setprogress(self,hash,progress):
         
         where={"hash":hash}
-        # "type" : type,
         newvalue={"$set":{ "progress" : progress}}
         try:
             self.col.update_one(where,newvalue)
@@ -68,7 +63,6 @@ class vaiscanDB():
     def setall(self,filename,filesize,hash,progress,risk,type):
     
         where={"hash":hash}
-        # "type" : type,
         newvalue={"$set":{ "file_name":filename,"size":filesize,"progress" : progress,"risk":risk,"type":type}}
         
         try:
